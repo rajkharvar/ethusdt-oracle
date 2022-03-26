@@ -1,9 +1,12 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
+import "./interface/Caller.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract EthPriceOracle is AccessControl {
+  using SafeMath for uint256;
   address private owner;
   bytes32 public constant ORACLE_ROLE = 0x68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef1;
 
@@ -12,12 +15,21 @@ contract EthPriceOracle is AccessControl {
   uint16 public numOracles = 0;
   uint16 public threshold = 0;
 
+  struct Response {
+    address oracleAddress;
+    address callerAddress;
+    uint256 ethPrice;
+  }
+
   mapping(uint256 => bool) pendingRequests;
+  mapping(uint256 => Response[]) requestIdToResponse;
 
   event OracleAdded(address indexed oracleAddress);
   event OracleRemoved(address indexed oracleAddress);
   event ThresholdUpdated(uint16 newThreshold);
   event GetLatestEthPrice(address callerAddress, uint id);
+  event SetLatestEthPrice(uint256 ethPrice, address callerAddress, uint256 id);
+
 
   modifier onlyOwner() {
     require(owner == msg.sender, "Caller is not owner");
@@ -64,5 +76,30 @@ contract EthPriceOracle is AccessControl {
     pendingRequests[id] = true;
     emit GetLatestEthPrice(msg.sender, id);
     return id;
+  }
+
+  /// @notice Oracle sends response for id
+  /// @dev Oracle submits ethPrice response for id
+  /// @param _ethPrice ethPrice for id
+  /// @param _callerAddress callerAddress contract
+  /// @param _id requestId
+  function setLatestEthPrice(uint256 _ethPrice, address _callerAddress ,uint256 _id) public {
+    require(hasRole(ORACLE_ROLE, msg.sender), "Only oracle can set ethPrice");
+    require(pendingRequests[_id] == true, "This request id is not in pending list");
+    Response memory resp;
+    resp = Response(msg.sender, _callerAddress, _ethPrice);
+    requestIdToResponse[_id].push(resp);
+    uint256 numResponses = requestIdToResponse[_id].length;
+    if (numResponses == threshold) {
+      uint256 computedEthPrice = 0;
+      for (uint256 i = 0; i < numResponses; i++) {
+        computedEthPrice = computedEthPrice.add(requestIdToResponse[_id][i].ethPrice);
+      }
+      computedEthPrice = computedEthPrice.div(numResponses);
+      CallerInterface callerInstance;
+      callerInstance = CallerInterface(_callerAddress);
+      callerInstance.callback(computedEthPrice, _id);
+      emit SetLatestEthPrice(computedEthPrice, _callerAddress, _id);
+    }
   }
 }
