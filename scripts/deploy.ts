@@ -6,20 +6,24 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  const EthPriceOracle = await ethers.getContractFactory("EthPriceOracle");
+  const ethPriceOracle = await EthPriceOracle.deploy();
+  await ethPriceOracle.deployed();
 
-  // We get the contract to deploy
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const ethPriceOracleAddress = ethPriceOracle.address;
+  console.log("Deployed ethPrice oracle at: ", ethPriceOracleAddress);
 
-  await greeter.deployed();
+  // Update threshold to 1
+  const tx = await ethPriceOracle.updateThreshold(1);
+  console.log("Updating threshold to 1, please wait... \ntxHash: ", tx.hash);
+  tx.wait();
+  console.log("Updated threshold to 1");
 
-  console.log("Greeter deployed to:", greeter.address);
+  const Caller = await ethers.getContractFactory("Caller");
+  const caller = await Caller.deploy(ethPriceOracleAddress);
+  await caller.deployed();
+  const callerAddress = caller.address;
+  console.log("Caller deployed at: ", callerAddress);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
