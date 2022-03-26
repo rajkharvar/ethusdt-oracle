@@ -47,6 +47,11 @@ contract Caller is Ownable {
     emit PriceUpdated(ethPrice, _id, msg.sender);
   }
 
+  /// @notice Retrieve latest ethPrice reported by oracle
+  function getEthPrice() public view returns(uint256) {
+    return ethPrice;
+  }
+
   modifier onlyOracle {
     require(msg.sender == oracleAddress, "You are not authorized to call this function");
     _;
