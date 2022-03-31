@@ -5,11 +5,13 @@
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
 
+const ETH_ORACLE_ADDRESS =
+  process.env.ETH_ORACLE_ADDRESS ||
+  "0xAe89cf9B0ea3353a09B47489F1426fa5b43c7278";
+
 async function main() {
   const EthPriceOracle = await ethers.getContractFactory("EthPriceOracle");
-  const ethPriceOracle = EthPriceOracle.attach(
-    "0xfE1E3f8E756eFaB96c5Ed47E1c5c5C27589A2887"
-  );
+  const ethPriceOracle = EthPriceOracle.attach(ETH_ORACLE_ADDRESS);
 
   const tx = await ethPriceOracle.getLatestEthPrice();
   console.log("Getting latest ethPrice: \ntxHash: ", tx.hash);
