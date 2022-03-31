@@ -38,6 +38,7 @@ contract EthPriceOracle is AccessControl {
   
   constructor() {
     owner = msg.sender;
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
   }
 
   /// @notice Grant oracle role to address
