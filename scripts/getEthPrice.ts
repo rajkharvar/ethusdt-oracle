@@ -5,20 +5,19 @@
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
 
-const ETH_ORACLE_ADDRESS =
-  process.env.ETH_ORACLE_ADDRESS ||
-  "0xAe89cf9B0ea3353a09B47489F1426fa5b43c7278";
+const CALLER_ADDRESS =
+  process.env.CALLER_ADDRESS || "0x2c3628E2E6464717a4753fae99C9bca539d25E7e";
 
 async function main() {
-  const EthPriceOracle = await ethers.getContractFactory("EthPriceOracle");
-  const ethPriceOracle = EthPriceOracle.attach(ETH_ORACLE_ADDRESS);
+  console.log("CALLER_ADDRESS");
+  console.log(CALLER_ADDRESS);
+  const Caller = await ethers.getContractFactory("Caller");
+  const caller = Caller.attach(CALLER_ADDRESS);
 
-  const tx = await ethPriceOracle.getLatestEthPrice();
-  console.log("Getting latest ethPrice: \ntxHash: ", tx.hash);
+  console.log("Generating request...");
+
+  const tx = await caller.updateLatestPrice();
   await tx.wait();
-
-  console.log("Tx successful");
-  console.log(tx.data);
 
   console.log("tx");
   console.log(tx);

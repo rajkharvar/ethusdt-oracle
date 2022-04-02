@@ -17,6 +17,7 @@ contract Caller is Ownable {
 
   constructor(address _oracleAddress) {
     oracleAddress = _oracleAddress;
+    oracleInstance = EthPriceOracleInterface(_oracleAddress);
     emit OracleAddressUpdated(_oracleAddress);
   }
 

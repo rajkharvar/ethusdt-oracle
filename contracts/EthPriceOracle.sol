@@ -21,7 +21,7 @@ contract EthPriceOracle is AccessControl {
     uint256 ethPrice;
   }
 
-  mapping(uint256 => bool) pendingRequests;
+  mapping(uint256 => bool) public pendingRequests;
   mapping(uint256 => Response[]) requestIdToResponse;
 
   event OracleAdded(address indexed oracleAddress);
@@ -73,7 +73,7 @@ contract EthPriceOracle is AccessControl {
   /// @return id
   function getLatestEthPrice() public returns(uint256) {
     randNonce++;
-    uint id = uint(keccak256(abi.encodePacked(msg.sender, block.timestamp, randNonce))) % modulus;
+    uint256 id = uint(keccak256(abi.encodePacked(msg.sender, block.timestamp, randNonce))) % modulus;
     pendingRequests[id] = true;
     emit GetLatestEthPrice(msg.sender, id);
     return id;
@@ -86,7 +86,7 @@ contract EthPriceOracle is AccessControl {
   /// @param _id requestId
   function setLatestEthPrice(uint256 _ethPrice, address _callerAddress ,uint256 _id) public {
     require(hasRole(ORACLE_ROLE, msg.sender), "Only oracle can set ethPrice");
-    require(pendingRequests[_id] == true, "This request id is not in pending list");
+    require(pendingRequests[_id], "This request id is not in pending list");
     Response memory resp;
     resp = Response(msg.sender, _callerAddress, _ethPrice);
     requestIdToResponse[_id].push(resp);

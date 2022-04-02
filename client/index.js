@@ -30,30 +30,33 @@ const filterEvents = async () => {
   ethPriceOracleContract.on("SetLatestEthPrice", (...args) => {
     console.log("Latest ethPrice updated");
 
-    console.log("args");
-    console.log(args);
+    console.log(`Latest Eth price reported by oracle: ${args[0].toNumber()}`);
   });
 };
 
 const processRequest = async (callerAddress, id) => {
   console.log(`Processing request`);
-  console.log("id");
-  console.log(id);
   const ethPrice = await fetchLatestEthPrice();
-  console.log(
-    `Sending tx for requestId: ${id.toNumber()} with ethPrice: ${ethPrice}`
-  );
   const ethPriceOracleContract = getOracleContractInstance();
 
-  const tx = await ethPriceOracleContract.setLatestEthPrice(
-    ethPrice,
-    callerAddress,
-    id
-  );
-  await tx.wait();
+  const isRequestPending = await checkRequestPending(id);
 
-  console.log("tx");
-  console.log(tx);
+  if (isRequestPending) {
+    const tx = await ethPriceOracleContract.setLatestEthPrice(
+      ethPrice,
+      callerAddress,
+      id
+    );
+    await tx.wait();
+
+    console.log("Successfully reported latest ethPrice!");
+  }
+};
+
+const checkRequestPending = async (id) => {
+  const ethPriceOracleContract = getOracleContractInstance();
+  const isRequestPending = await ethPriceOracleContract.pendingRequests(id);
+  return isRequestPending;
 };
 
 const init = async () => {
