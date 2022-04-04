@@ -16,7 +16,7 @@ const getOracleContractInstance = () => {
 };
 
 const filterEvents = async () => {
-  console.log("Listening for events");
+  console.log("Listening for events...");
   const ethPriceOracleContract = getOracleContractInstance();
 
   ethPriceOracleContract.on("GetLatestEthPrice", (...args) => {
@@ -50,6 +50,8 @@ const processRequest = async (callerAddress, id) => {
     await tx.wait();
 
     console.log("Successfully reported latest ethPrice!");
+  } else {
+    console.log(`Request id ${id} has been already processed`);
   }
 };
 
@@ -71,8 +73,8 @@ const init = async () => {
     }
     provider = ethers.providers.getDefaultProvider(PROVIDER_URL);
     wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-    filterEvents();
     console.log(`Successfully loaded ${wallet.address} from privateKey`);
+    filterEvents();
   } catch (err) {
     console.log(err);
   }
