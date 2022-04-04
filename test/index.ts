@@ -76,11 +76,13 @@ describe("EthPriceOracle", function () {
     ethPriceOracle = ethPriceOracle.connect(signers[0]);
     await caller.updateLatestPrice();
     await ethPriceOracle.updateThreshold(1);
+    await ethPriceOracle.addOracle(signers[4].address);
+    ethPriceOracle = ethPriceOracle.connect(signers[4]);
 
     const getLatestEthPrice: any = new Promise((resolve, reject) => {
       ethPriceOracle.on(
         "GetLatestEthPrice",
-        async (callerAddress: string, id: BigNumber, event) => {
+        (callerAddress: string, id: BigNumber, event) => {
           event.removeListener();
           resolve({
             id,
@@ -94,20 +96,16 @@ describe("EthPriceOracle", function () {
       }, 6000);
     });
 
-    await caller.updateLatestPrice();
+    const event = await getLatestEthPrice;
 
-    const getLatestEthPriceEvent = await getLatestEthPrice;
-    console.log("getLatestEthPrice");
-    console.log(getLatestEthPrice);
     await ethPriceOracle.setLatestEthPrice(
       BigNumber.from(3000),
-      getLatestEthPrice.callerAddress,
-      getLatestEthPriceEvent.id
+      event.callerAddress,
+      event.id
     );
 
     const ethPrice = (await caller.getEthPrice()).toNumber();
-    console.log("ethPrice");
-    console.log(ethPrice);
+    expect(ethPrice).to.be.equal(3000);
   });
 
   it("Oracle cannot vote twice for single requestId", async () => {
