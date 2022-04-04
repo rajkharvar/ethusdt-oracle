@@ -15,3 +15,31 @@ Node (client) listens for generated request and reports price.
 3. As soon as responses for request id reaches to **threshold** value, mean of all the reported responses is considered as final price.
 4. dApp listens for `PriceUpdated` event of `Caller.sol` to get the updated price.
 5. dApp can also access the latest price reported by oracle by calling `getEthPrice()`.
+
+## Environment Variables
+
+To run node(client), you will need to add the following environment variables to your .env file
+`ORACLE_PRIVATE_KEY`
+`PROVIDER_URL`
+`ETH_ORACLE_ADDRESS`
+
+To deploy contracts, you will need to add the following environment variables to your .env file:
+`PRIVATE_KEY`
+`MUMBAI_URL`
+
+## Deployment
+
+To deploy the contracts run
+
+```bash
+  npm install
+  npx hardhat run scripts/deploy.ts --network [NETWORK_NAME]
+```
+
+## Running a node
+
+To start node on local run
+
+```bash
+  npm start
+```
