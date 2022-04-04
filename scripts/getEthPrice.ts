@@ -9,8 +9,6 @@ const CALLER_ADDRESS =
   process.env.CALLER_ADDRESS || "0x2c3628E2E6464717a4753fae99C9bca539d25E7e";
 
 async function main() {
-  console.log("CALLER_ADDRESS");
-  console.log(CALLER_ADDRESS);
   const Caller = await ethers.getContractFactory("Caller");
   const caller = Caller.attach(CALLER_ADDRESS);
 

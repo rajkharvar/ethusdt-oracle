@@ -23,6 +23,7 @@ contract EthPriceOracle is AccessControl {
 
   mapping(uint256 => bool) public pendingRequests;
   mapping(uint256 => Response[]) requestIdToResponse;
+  mapping(uint256 => mapping(address => bool)) public requestReponded;
 
   event OracleAdded(address indexed oracleAddress);
   event OracleRemoved(address indexed oracleAddress);
@@ -87,6 +88,8 @@ contract EthPriceOracle is AccessControl {
   function setLatestEthPrice(uint256 _ethPrice, address _callerAddress ,uint256 _id) public {
     require(hasRole(ORACLE_ROLE, msg.sender), "Only oracle can set ethPrice");
     require(pendingRequests[_id], "This request id is not in pending list");
+    require(!requestReponded[_id][msg.sender], "Oracle can only vote once");
+    requestReponded[_id][msg.sender] = true;
     Response memory resp;
     resp = Response(msg.sender, _callerAddress, _ethPrice);
     requestIdToResponse[_id].push(resp);

@@ -71,36 +71,83 @@ describe("EthPriceOracle", function () {
     expect(id).to.be.gt(0).lt(1000);
   });
 
-  it("Oracle can setEthPrice", async () => {
-    let ethPrice: BigNumber | undefined;
+  it("Oracle can set ethPrice", async () => {
     // Generated request
-    caller = caller.connect(signers[2]);
     ethPriceOracle = ethPriceOracle.connect(signers[0]);
     await caller.updateLatestPrice();
     await ethPriceOracle.updateThreshold(1);
 
-    // Listen to event and setLatestEthPrice
-    ethPriceOracle.on("GetLatestEthPrice", async (...args) => {
-      console.log("Args from GetLatestEthPrice");
-      console.log(args);
-      const id: BigNumber = args[1];
-      const tx = await ethPriceOracle.setLatestEthPrice(
-        BigNumber.from(3000),
-        caller.address,
-        id
+    const getLatestEthPrice: any = new Promise((resolve, reject) => {
+      ethPriceOracle.on(
+        "GetLatestEthPrice",
+        async (callerAddress: string, id: BigNumber, event) => {
+          event.removeListener();
+          resolve({
+            id,
+            callerAddress,
+          });
+        }
       );
-      await tx.wait();
+
+      setTimeout(() => {
+        reject(new Error("timeout"));
+      }, 6000);
     });
 
-    await new Promise((resolve) => setTimeout(() => resolve(null), 5000));
+    await caller.updateLatestPrice();
 
-    ethPriceOracle.on("SetLatestEthPrice", (...args) => {
-      console.log("Args from SetLatestEthPrice");
-      console.log(args);
+    const getLatestEthPriceEvent = await getLatestEthPrice;
+    console.log("getLatestEthPrice");
+    console.log(getLatestEthPrice);
+    await ethPriceOracle.setLatestEthPrice(
+      BigNumber.from(3000),
+      getLatestEthPrice.callerAddress,
+      getLatestEthPriceEvent.id
+    );
+
+    const ethPrice = (await caller.getEthPrice()).toNumber();
+    console.log("ethPrice");
+    console.log(ethPrice);
+  });
+
+  it("Oracle cannot vote twice for single requestId", async () => {
+    // Add oracle
+    ethPriceOracle = ethPriceOracle.connect(signers[0]);
+    await ethPriceOracle.addOracle(signers[3].address);
+    ethPriceOracle = ethPriceOracle.connect(signers[3]);
+    await caller.updateLatestPrice();
+
+    const getLatestEthPrice: any = new Promise((resolve, reject) => {
+      ethPriceOracle.on(
+        "GetLatestEthPrice",
+        (callerAddress: string, id: BigNumber, event) => {
+          event.removeListener();
+          resolve({
+            id,
+            callerAddress,
+          });
+        }
+      );
+
+      setTimeout(() => {
+        reject(new Error("timeout"));
+      }, 6000);
     });
 
-    await new Promise((resolve) => setTimeout(() => resolve(null), 5000));
+    const event = await getLatestEthPrice;
 
-    expect(ethPrice).to.be.equal(3000);
+    await ethPriceOracle.setLatestEthPrice(
+      BigNumber.from(3000),
+      event.callerAddress,
+      event.id
+    );
+
+    await expect(
+      ethPriceOracle.setLatestEthPrice(
+        BigNumber.from(3000),
+        event.callerAddress,
+        event.id
+      )
+    ).to.be.revertedWith("Oracle can only vote once");
   });
 });
