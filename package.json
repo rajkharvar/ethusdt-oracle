@@ -1,7 +1,8 @@
 {
   "name": "hardhat-project",
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "start": "node client/index.js"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
