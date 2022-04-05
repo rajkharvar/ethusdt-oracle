@@ -18,13 +18,13 @@ Node (client) listens for generated request and reports price.
 
 ## Environment Variables
 
-To run node(client), you will need to add the following environment variables to your .env file
-`ORACLE_PRIVATE_KEY`
-`PROVIDER_URL`
+To run node(client), you will need to add the following environment variables to your .env file:<br/>
+`ORACLE_PRIVATE_KEY`<br/>
+`PROVIDER_URL`<br/>
 `ETH_ORACLE_ADDRESS`
 
-To deploy contracts, you will need to add the following environment variables to your .env file:
-`PRIVATE_KEY`
+To deploy contracts, you will need to add the following environment variables to your .env file:<br/>
+`PRIVATE_KEY`<br/>
 `MUMBAI_URL`
 
 ## Deployment
