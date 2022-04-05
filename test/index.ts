@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 import { Caller, EthPriceOracle } from "../typechain";
-const hre = require("hardhat");
 
 describe("EthPriceOracle", function () {
   let ethPriceOracle: EthPriceOracle;
