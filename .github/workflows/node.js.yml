@@ -21,4 +21,5 @@ jobs:
       uses: actions/setup-node@v2
     - run: npm install
     - run: npm run cp-env
-    - run: npm test
+    - run: npx hardhat typechain
+    - run: npm run test
